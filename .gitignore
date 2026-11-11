@@ -1,0 +1,10 @@
+.env
+config.json
+data/
+__pycache__/
+*.pyc
+.DS_Store
+heartbeat.json
+heartbeat.json.tmp
+.pytest_cache/
+*.zip

@@ -1,0 +1,28 @@
+services:
+  mail-assistant:
+    build: .
+    restart: unless-stopped
+    init: true
+    env_file: .env
+    environment:
+      DB_PATH: /app/data/mail_assistant.sqlite3
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - mail_state:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD", "python", "main.py", "--healthcheck"]
+      start_period: 2m
+      interval: 2m
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mail_state:

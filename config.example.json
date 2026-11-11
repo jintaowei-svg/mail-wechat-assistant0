@@ -1,0 +1,117 @@
+{
+  "accounts": [
+    {
+      "enabled": false,
+      "provider": "qq",
+      "name": "QQ私人邮箱",
+      "host": "imap.qq.com",
+      "port": 993,
+      "username": "你的QQ号码@qq.com",
+      "password_env": "QQ_MAIL_AUTH_CODE",
+      "folder": "INBOX"
+    },
+    {
+      "enabled": false,
+      "provider": "163",
+      "name": "163个人邮箱",
+      "host": "imap.163.com",
+      "port": 993,
+      "username": "你的账号@163.com",
+      "password_env": "NETEASE_MAIL_AUTH_CODE",
+      "folder": "INBOX"
+    },
+    {
+      "enabled": false,
+      "provider": "xjtu_student",
+      "name": "西交学生邮箱",
+      "host": "stu.xjtu.edu.cn",
+      "port": 993,
+      "username": "你的学生邮箱@stu.xjtu.edu.cn",
+      "password_env": "XJTU_MAIL_APP_PASSWORD",
+      "folder": "INBOX",
+      "rules": {
+        "urgent_keywords": [
+          "选课截止",
+          "报名截止",
+          "申请截止",
+          "答辩截止",
+          "缴费截止",
+          "学位申请截止",
+          "论文提交截止",
+          "考试时间变更",
+          "补考通知",
+          "最后提交期限"
+        ],
+        "important_keywords": [
+          "教务处",
+          "选课",
+          "退课",
+          "成绩",
+          "学分",
+          "考试安排",
+          "补考",
+          "学籍",
+          "注册报到",
+          "奖学金",
+          "助学金",
+          "评奖评优",
+          "导师",
+          "毕业",
+          "答辩",
+          "学位申请",
+          "论文送审",
+          "论文提交",
+          "课程调整",
+          "实验室安排",
+          "研究生院",
+          "保研",
+          "就业指导",
+          "实习通知",
+          "学术会议",
+          "科研项目"
+        ]
+      }
+    }
+  ],
+  "rules": {
+    "vip_senders": [
+      "boss@example.com"
+    ],
+    "vip_domains": [],
+    "urgent_keywords": [
+      "付款失败",
+      "账户异常",
+      "紧急处理",
+      "截止日期",
+      "逾期",
+      "payment failed",
+      "security alert",
+      "deadline"
+    ],
+    "important_keywords": [
+      "请回复",
+      "请确认",
+      "合同",
+      "发票",
+      "面试",
+      "客户反馈",
+      "请审核",
+      "请签署",
+      "invoice",
+      "contract",
+      "interview",
+      "approval",
+      "action required"
+    ],
+    "ignore_keywords": [
+      "取消订阅",
+      "退订",
+      "unsubscribe",
+      "促销",
+      "优惠券",
+      "折扣",
+      "newsletter",
+      "coupon"
+    ]
+  }
+}
