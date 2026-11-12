@@ -113,8 +113,15 @@ def extract_message(raw: bytes) -> MailMessage:
 
     plain: list[str] = []
     html: list[str] = []
-    for part in msg.walk():
-        if part.is_multipart() or part.get_content_disposition() == "attachment":
+    pending = [msg]
+    while pending:
+        part = pending.pop()
+        # walk() also visits children of attached messages/multipart containers.
+        # Prune the entire attachment subtree before collecting any body text.
+        if part.get_content_disposition() == "attachment":
+            continue
+        if part.is_multipart():
+            pending.extend(reversed(part.get_payload()))
             continue
         ct = part.get_content_type().lower()
         if ct not in ("text/plain", "text/html"):
