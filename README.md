@@ -179,6 +179,8 @@ python -m py_compile main.py providers.py mailcore.py setup.py
 
 新增的 AI 回退测试使用模拟响应，覆盖异常格式、网络错误、紧急优先级和日志隐私；邮箱扫描回归验证异常 AI 响应不会阻塞后续邮件。GitHub Actions 在 Ubuntu / Windows、Python 3.11 / 3.13 上运行离线测试、语法检查和本地演示，不需要邮箱密码、SendKey 或 AI 服务。`.env` 的 `0600` 权限断言仅在 POSIX 系统运行，Windows 文件权限不使用该位掩码判断。
 
+CI 显式启用 UTF-8，避免 Windows runner 重定向中文输出时使用旧编码而报错。本机若遇到 `UnicodeEncodeError`，可使用 `python -X utf8 main.py --demo` 或 `python -X utf8 -m unittest discover -s tests -v`；若设置过 `PYTHONIOENCODING`，请确认其为 `utf-8`。
+
 ### 可参考的开源项目
 
 - <https://github.com/elie222/inbox-zero> — AI 邮件规则/智能分类；

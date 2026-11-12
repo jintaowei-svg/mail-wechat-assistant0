@@ -8,6 +8,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # Windows runners redirect output using a legacy encoding by default.
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: utf-8
+
 jobs:
   unittest:
     name: Python ${{ matrix.python }} / ${{ matrix.os }}
