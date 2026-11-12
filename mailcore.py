@@ -211,19 +211,29 @@ def ai_assess(msg: MailMessage, heuristic: Assessment) -> Assessment:
     # The default is to keep all content local; invoking this is an explicit opt-in.
     try:
         result = _post_json(base.rstrip("/") + "/chat/completions", payload, os.getenv("AI_API_KEY", ""), timeout=30)
-        answer = result["choices"][0]["message"]["content"].strip()
+        answer = result["choices"][0]["message"]["content"]
+        if not isinstance(answer, str):
+            raise ValueError("AI message content must be text")
+        answer = answer.strip()
         if answer.startswith("```"):
             answer = re.sub(r"^```(?:json)?\s*|\s*```$", "", answer, flags=re.I)
         obj = json.loads(answer)
+        if not isinstance(obj, dict):
+            raise ValueError("AI assessment must be a JSON object")
+        # Malformed model fields must not become summaries such as 'None' or '[]'.
+        # Reject the response as a whole and preserve the local rule assessment.
+        if any(not isinstance(obj.get(field, ""), str)
+               for field in ("summary", "action", "deadline")):
+            raise ValueError("AI assessment text fields must be strings")
         priority = obj.get("priority", heuristic.priority)
         if priority not in ("urgent", "important", "ignore"):
             priority = heuristic.priority
         # A known emergency rule is a floor rather than a suggestion.
         if heuristic.priority == "urgent":
             priority = "urgent"
-        summary = compact_text(redact(str(obj.get("summary", ""))), 115) or heuristic.summary
-        action = compact_text(redact(str(obj.get("action", ""))), 90) or heuristic.action
-        deadline = compact_text(redact(str(obj.get("deadline", ""))), 60) or heuristic.deadline
+        summary = compact_text(redact(obj.get("summary", "")), 115) or heuristic.summary
+        action = compact_text(redact(obj.get("action", "")), 90) or heuristic.action
+        deadline = compact_text(redact(obj.get("deadline", "")), 60) or heuristic.deadline
         return Assessment(priority, summary, action, deadline)
     except (HTTPError, URLError, TimeoutError, ValueError, KeyError, IndexError, TypeError) as e:
         print(f"[AI] 推理失败，已回退规则分类：{type(e).__name__}")
