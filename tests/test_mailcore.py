@@ -109,6 +109,38 @@ def sample(subject, body, date="Wed, 11 Nov 2026 10:20:00 +0800"):
 
 
 class ScanAndDeliveryTests(unittest.TestCase):
+    def test_invalid_ai_response_does_not_block_later_mail(self):
+        current_date = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+        FakeIMAP.mailbox = {
+            12: sample("请确认合同", "请回复第一份合同", current_date),
+            18: sample("发票请确认", "请审核第二份发票", current_date),
+        }
+        FakeIMAP.instances = []
+        responses = [
+            {"choices": [{"message": {"content": "null"}}]},
+            {"choices": [{"message": {"content":
+                '{"priority":"important","summary":"第二封 AI 摘要","action":"请审核"}'}}]},
+        ]
+        env = {"TEST_MAIL_PASS": "fake-secret", "AI_MODEL": "fictional-model",
+               "AI_BASE_URL": "https://ai.example.invalid/v1", "AI_API_KEY": "fake-key"}
+        with TemporaryDirectory() as tmp, patch("main.imaplib.IMAP4_SSL", FakeIMAP), \
+                patch.dict(os.environ, env), \
+                patch("mailcore._post_json", side_effect=responses) as post:
+            con = db_init(Path(tmp) / "state.db")
+            try:
+                cfg = {"name": "personal", "host": "imap.example.org",
+                       "username": "me@example.org", "password_env": "TEST_MAIL_PASS"}
+                self.assertEqual(scan_account(con, cfg, {}), (2, 2))
+                self.assertEqual(_cursor(con, "personal", "INBOX"), ("777", 18))
+                rows = con.execute("SELECT summary FROM messages ORDER BY uid").fetchall()
+                self.assertEqual([row["summary"] for row in rows],
+                                 ["请回复第一份合同", "第二封 AI 摘要"])
+                self.assertEqual(scan_account(con, cfg, {}), (0, 0))
+                self.assertEqual(post.call_count, 2)
+                self.assertTrue(FakeIMAP.instances[-1].readonly_used)
+            finally:
+                con.close()
+
     def test_scan_dedup_increment_and_readonly(self):
         now = datetime.now(timezone.utc)
         current_date = now.strftime("%a, %d %b %Y %H:%M:%S +0000")

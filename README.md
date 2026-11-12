@@ -120,6 +120,8 @@ AI_API_KEY=
 
 需要先安装 Ollama 并拉取该模型。**开启非本地 AI API 后，邮件主题、发件人及部分正文可能离开你自己的机器**，学校科研、个人隐私内容不建议未经确认就转发到第三方模型。
 
+AI 请求失败、响应正文不是文本、模型返回的 JSON 不是对象，或摘要/建议/截止时间字段不是字符串时，会回退到本地规则分类，继续处理后续邮件；不会把 `null` 或数组直接当成摘要。缺失或空白的文本字段沿用规则结果，规则判定为紧急的邮件不会被 AI 降级。失败日志只记录异常类型，不打印原始响应、邮件正文或 API 密钥。
+
 ## 6. Docker 自动部署（NAS / VPS / 常开主机）
 
 先在宿主机完成 `python setup.py` 或 `python setup.py --add-xjtu` 并确认 `.env`、`config.json` 已生成，然后：
@@ -174,6 +176,8 @@ docker compose down
 python -m unittest discover -s tests -v
 python -m py_compile main.py providers.py mailcore.py setup.py
 ```
+
+新增的 AI 回退测试使用模拟响应，覆盖异常格式、网络错误、紧急优先级和日志隐私；邮箱扫描回归验证异常 AI 响应不会阻塞后续邮件。GitHub Actions 在 Ubuntu / Windows、Python 3.11 / 3.13 上运行离线测试、语法检查和本地演示，不需要邮箱密码、SendKey 或 AI 服务。`.env` 的 `0600` 权限断言仅在 POSIX 系统运行，Windows 文件权限不使用该位掩码判断。
 
 ### 可参考的开源项目
 

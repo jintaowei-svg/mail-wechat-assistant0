@@ -100,7 +100,8 @@ class XJTUProviderTests(unittest.TestCase):
                              {"qq", "163", "xjtu_student"})
             self.assertIn("XJTU_MAIL_APP_PASSWORD=fake-school-secret", (root / ".env").read_text(encoding="utf-8"))
             self.assertNotIn("fake-school-secret", content)
-            self.assertEqual((root / ".env").stat().st_mode & 0o777, 0o600)
+            if os.name == "posix":
+                self.assertEqual((root / ".env").stat().st_mode & 0o777, 0o600)
 
     def test_incremental_setup_preserves_qq_and_163(self):
         with TemporaryDirectory() as folder:
